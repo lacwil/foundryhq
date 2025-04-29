@@ -7,28 +7,22 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method Not Allowed" });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Only POST requests allowed' });
   }
 
   const { prompt } = req.body;
 
-  if (!prompt) {
-    return res.status(400).json({ message: "Prompt is required" });
-  }
-
   try {
     const completion = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
-      messages: [
-        { role: "system", content: "You are FoundryBot, a helpful business builder assistant." },
-        { role: "user", content: prompt }
-      ],
+      messages: [{ role: "user", content: prompt }],
     });
 
-    res.status(200).json({ result: completion.data.choices[0].message.content });
+    const result = completion.data.choices[0].message.content.trim();
+    res.status(200).json({ result });
   } catch (error) {
-    console.error("OpenAI API error:", error.response?.data || error.message);
-    res.status(500).json({ message: "Failed to generate response." });
+    console.error("OpenAI error:", error.message);
+    res.status(500).json({ error: "OpenAI request failed" });
   }
 }
