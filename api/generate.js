@@ -5,20 +5,15 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-/**
- * Vercel Serverless Function Handler
- */
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Only POST requests are allowed' });
-    return;
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const { prompt } = req.body;
 
   if (!prompt) {
-    res.status(400).json({ error: 'Prompt is required' });
-    return;
+    return res.status(400).json({ error: 'Prompt is required' });
   }
 
   try {
@@ -27,10 +22,10 @@ module.exports = async (req, res) => {
       messages: [{ role: 'user', content: prompt }],
     });
 
-    const reply = completion.data.choices[0].message.content.trim();
-    res.status(200).json({ result: reply });
-  } catch (err) {
-    console.error('OpenAI error:', err.response?.data || err.message);
+    const response = completion.data.choices[0].message.content.trim();
+    res.status(200).json({ result: response });
+  } catch (error) {
+    console.error('OpenAI API error:', error.response?.data || error.message);
     res.status(500).json({ error: 'Failed to connect to OpenAI' });
   }
 };
