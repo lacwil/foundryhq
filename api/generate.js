@@ -7,27 +7,35 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 export default async function handler(req, res) {
+  console.log("👉 Request received at /api/generate");
+
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Only POST requests allowed" });
+    console.log("❌ Invalid method:", req.method);
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   const { prompt } = req.body;
 
-  if (!prompt || prompt.trim() === "") {
+  if (!prompt) {
+    console.log("❌ No prompt received in body.");
     return res.status(400).json({ error: "Prompt is required" });
   }
 
   try {
+    console.log("⚙️ Sending prompt to OpenAI:", prompt);
+
     const completion = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo", // or "gpt-4" if your key supports it
+      model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: prompt }],
     });
 
-    const reply = completion.data.choices[0]?.message?.content;
+    const reply = completion.data.choices[0]?.message?.content || "No reply from OpenAI.";
 
-    return res.status(200).json({ result: reply });
+    console.log("✅ OpenAI returned:", reply);
+
+    res.status(200).json({ result: reply });
   } catch (error) {
-    console.error("OpenAI API error:", error.response?.data || error.message);
-    return res.status(500).json({ error: "Failed to generate response." });
+    console.error("❌ Error from OpenAI:", error.response?.data || error.message);
+    res.status(500).json({ error: "Failed to generate response from OpenAI" });
   }
 }
