@@ -1,9 +1,8 @@
-const { Configuration, OpenAIApi } = require('openai');
+const OpenAI = require('openai');
 
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const openai = new OpenAIApi(configuration);
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -17,15 +16,15 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [{ role: 'user', content: prompt }],
     });
 
-    const response = completion.data.choices[0].message.content.trim();
-    res.status(200).json({ result: response });
+    const result = completion.choices[0].message.content.trim();
+    res.status(200).json({ result });
   } catch (error) {
-    console.error('OpenAI API error:', error.response?.data || error.message);
+    console.error('OpenAI error:', error);
     res.status(500).json({ error: 'Failed to connect to OpenAI' });
   }
 };
