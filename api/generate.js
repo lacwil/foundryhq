@@ -1,0 +1,30 @@
+const OpenAI = require('openai');
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+module.exports = async (req, res) => {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    const { prompt } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt is required' });
+    }
+
+    const chat = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [{ role: 'user', content: prompt }]
+    });
+
+    const result = chat.choices[0].message.content;
+    res.status(200).json({ result });
+  } catch (error) {
+    console.error('OpenAI API error:', error);
+    res.status(500).json({ error: 'Failed to connect to OpenAI' });
+  }
+};
