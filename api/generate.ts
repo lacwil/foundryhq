@@ -1,6 +1,8 @@
 import { OpenAI } from 'openai';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -19,10 +21,10 @@ export default async function handler(req, res) {
       messages: [{ role: 'user', content: prompt }],
     });
 
-    const result = completion.choices[0].message.content.trim();
-    res.status(200).json({ result });
+    const response = completion.choices[0].message.content.trim();
+    res.status(200).json({ result: response });
   } catch (error) {
-    console.error('OpenAI API error:', error.message || error);
-    res.status(500).json({ error: 'Failed to connect to OpenAI' });
+    console.error('OpenAI API error:', error.response?.data || error.message);
+    res.status(500).json({ error: 'Something went wrong with OpenAI' });
   }
 }
